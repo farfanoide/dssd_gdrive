@@ -6,6 +6,9 @@
     {{item.name}}
     {% if item.shared %}
 
+    <a href="{%url 'share' file_id=item.id %}">
+      <i class="glyphicon glyphicon-ban-circle "></i>
+    </a>
     {% else %}
     <a href="{%url 'share' file_id=item.id %}">
       <i class="glyphicon glyphicon-share"></i>

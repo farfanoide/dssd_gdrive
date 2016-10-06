@@ -15,7 +15,7 @@ class GdriveRepository(object):
         self.service = build('drive', 'v3', http=http)
 
     def list(self):
-        return self.service.files().list().execute().get('files')
+        return self.service.files().list(fields='files(id,name,shared)').execute().get('files')
 
     def create(self, name):
         file_metadata = {
