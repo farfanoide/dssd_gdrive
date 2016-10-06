@@ -1,0 +1,23 @@
+{% extends "layout.html" %}
+{% block content %}
+<ul>
+  {% for item in items %}
+  <li>
+    {{item.name}}
+    {% if item.shared %}
+
+    {% else %}
+    <a href="{%url 'share' file_id=item.id %}">
+      <i class="glyphicon glyphicon-share"></i>
+    </a>
+    {% endif %}
+  </li>
+  {% endfor %}
+</ul>
+<form action="{%url 'create'%}" method="POST" accept-charset="utf-8">
+  {%csrf_token%}
+  <input type="text" name="new_file" placeholder="Ingrese nombre para el archivo">
+  <input type="submit" value="Crear">
+</form>
+  
+{% endblock content %}
