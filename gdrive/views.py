@@ -4,6 +4,7 @@ from django.http import HttpResponseRedirect
 from oauth2client.client import OAuth2WebServerFlow, OAuth2Credentials
 from django.conf.urls import url
 from django.core.urlresolvers import reverse, reverse_lazy
+from django.contrib import messages
 from .models import GdriveRepository
 from .forms import GdriveShareForm
 
@@ -18,6 +19,14 @@ flow = OAuth2WebServerFlow(
     scope='https://www.googleapis.com/auth/drive',
     redirect_uri='http://localhost:8000/sync_gdrive_success/'
 )
+
+class HasGdriveRepositoryMixin(object):
+    @property
+    def repo(self):
+        if not hasattr(self, '_repo'):
+            self._repo = GdriveRepository(self.request.session['credentials'])
+        return self._repo
+
 
 
 class HomeView(TemplateView):
@@ -48,17 +57,17 @@ class SyncGdriveSuccessView(View):
         return HttpResponseRedirect(reverse('list'))
 
 
-class GdriveListView(TemplateView):
+class GdriveListView(HasGdriveRepositoryMixin, TemplateView):
 
     template_name = 'list.html'
 
     def get_context_data(self, **kwargs):
         context = super(GdriveListView, self).get_context_data(**kwargs)
-        context['items'] = GdriveRepository(self.request.session['credentials']).list()
+        context['items'] = self.repo.list()
         return context
 
 
-class GdriveShareView(FormView):
+class GdriveShareView(HasGdriveRepositoryMixin, FormView):
     template_name = 'share.html'
     success_url = reverse_lazy('list')
     form_class = GdriveShareForm
@@ -69,13 +78,25 @@ class GdriveShareView(FormView):
         if form.is_valid():
             user_email = form.cleaned_data.get('user_email')
             file_id = kwargs.get('file_id')
-            GdriveRepository(self.request.session['credentials']).share(file_id, user_email)
+            self.repo.share(file_id, user_email)
+            messages.success(request, 'El archivo fue correctamente compartido con el usuario {0}'.format(user_email))
+        else:
+            return super(GdriveShareView, self).post(request, *args, **kwargs)
+        return HttpResponseRedirect(reverse('list'))
 
+class GdriveUnshareView(HasGdriveRepositoryMixin, View):
+    success_url = reverse_lazy('list')
 
-class GdriveCreateView(View):
+    def get(self, request, *args, **kwargs):
+        file_id = kwargs.get('file_id')
+        self.repo.unshare(file_id)
+        messages.success(request, 'El archivo se ha descompartido correctamente.')
+        return HttpResponseRedirect(reverse('list'))
+
+class GdriveCreateView(HasGdriveRepositoryMixin, View):
 
     def post(self, request, *args, **kwargs):
         name = self.request.POST['new_file']
-        GdriveRepository(self.request.session['credentials']).create(name)
-
+        self.repo.create(name)
+        messages.success(request, 'El archivo {file} se ha creado correctamente.'.format(file=name))
         return HttpResponseRedirect(reverse('list'))

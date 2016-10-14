@@ -41,6 +41,20 @@ class GdriveRepository(object):
         ))
         batch.execute()
 
+    def unshare(self, file_id):
+        batch = self.service.new_batch_http_request()
+
+        permissions = self.service.permissions().list(fileId=file_id).execute()
+
+        for permission in permissions.get('permissions'):
+            if permission['role'] != 'owner':
+                batch.add(self.service.permissions().delete(
+                    fileId=file_id,
+                    permissionId=permission['id'],
+                    fields='id',
+                ))
+
+        batch.execute()
 
     def _callback(self, request_id, response, exception):
         if exception:
