@@ -31,7 +31,6 @@ class HasGdriveRepositoryMixin(object):
         return self._repo
 
 
-
 class HomeView(TemplateView):
 
     template_name = 'home.html'
@@ -46,13 +45,17 @@ class SyncGdriveView(TemplateView):
         return HttpResponseRedirect(auth_uri)
 
 
+class SyncGdriveErrorView(TemplateView):
+    template_name = 'error.html'
+
+
 class SyncGdriveSuccessView(View):
 
     def get(self, request, *args, **kwargs):
         code = request.GET.get('code', None)
 
         if not code:
-            return False
+            return HttpResponseRedirect(reverse('gsync_error'))
 
         credentials = flow.step2_exchange(code)
         request.session['credentials'] = credentials.to_json()
@@ -87,6 +90,7 @@ class GdriveShareView(HasGdriveRepositoryMixin, FormView):
             return super(GdriveShareView, self).post(request, *args, **kwargs)
         return HttpResponseRedirect(reverse('list'))
 
+
 class GdriveUnshareView(HasGdriveRepositoryMixin, View):
     success_url = reverse_lazy('list')
 
@@ -95,6 +99,7 @@ class GdriveUnshareView(HasGdriveRepositoryMixin, View):
         self.repo.unshare(file_id)
         messages.success(request, 'El archivo se ha descompartido correctamente.')
         return HttpResponseRedirect(reverse('list'))
+
 
 class GdriveCreateView(HasGdriveRepositoryMixin, View):
 
