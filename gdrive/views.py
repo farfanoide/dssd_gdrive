@@ -13,11 +13,14 @@ import httplib2
 
 import json
 
+import os
+host = os.environ.get('CALLBACK_HOST', 'http://localhost:8000/')
+
 flow = OAuth2WebServerFlow(
     client_id='356000299673-r1g4pasacfa7p4v85s49kcf92aeqamh3.apps.googleusercontent.com',
     client_secret='LHT7jayNUPcxv6cWqQcuB08N',
     scope='https://www.googleapis.com/auth/drive',
-    redirect_uri='http://localhost:8000/sync_gdrive_success/'
+    redirect_uri=host+'sync_gdrive_success/'
 )
 
 class HasGdriveRepositoryMixin(object):
