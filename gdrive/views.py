@@ -30,6 +30,11 @@ class HasGdriveRepositoryMixin(object):
             self._repo = GdriveRepository(self.request.session['credentials'])
         return self._repo
 
+    def get(self, request, *args, **kwargs):
+        if request.session.get('credentials', None) == None:
+            messages.info(request, 'Primer necesitamos conectarnos con google drive, presione el icono debajo y conceda permisos a la aplicacion para poder continuar.')
+            return HttpResponseRedirect(reverse('home'))
+
 
 class HomeView(TemplateView):
 
