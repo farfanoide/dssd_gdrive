@@ -34,6 +34,7 @@ class HasGdriveRepositoryMixin(object):
         if request.session.get('credentials', None) == None:
             messages.info(request, 'Primer necesitamos conectarnos con google drive, presione el icono debajo y conceda permisos a la aplicacion para poder continuar.')
             return HttpResponseRedirect(reverse('home'))
+        return super(HasGdriveRepositoryMixin, self).get(request, *args, **kwargs)
 
 
 class HomeView(TemplateView):
